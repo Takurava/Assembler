@@ -1,0 +1,39 @@
+format PE console
+
+include 'win32ax.inc'
+
+section '.text' code readable executable
+start:
+   cinvoke scanf, d, vard
+   cinvoke printf, d, dword[vard]
+   cinvoke printf, cr
+
+   mov  eax, dword[vard]        ; младшая часть делимого
+   mov  ebx, 10                 ; делитель для деления на 10
+
+LOOP1:
+   xor  edx, edx                ; обнуляем старшую часть делимого, в ней может быть остаток от предыдущего деления
+   div  ebx                     ; добавить нужную команду для деления
+   push eax                     ; сохранить регистр eax, т.к. printf его испортит
+   cinvoke printf, d, edx
+   cinvoke printf, cr
+   pop eax                      ; восстановить регистр eax
+   test eax, eax                ; проверяем eax на равенство нулю
+   jne  LOOP1
+
+   cinvoke printf, cr
+
+
+   cinvoke system, "pause"
+exit:
+   invoke ExitProcess, 0;
+
+section '.data' data readable writeable
+ cr db 13,10,0
+ d db '%d', 0
+ vard dd ?
+
+section '.idata' import data readable writeable
+library msvcrt, 'msvcrt.dll', kernel32, 'kernel32.dll'
+import msvcrt, printf, 'printf', scanf,'scanf', system,'system'
+import kernel32, ExitProcess,'ExitProcess'
